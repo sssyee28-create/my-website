@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GO SUE YEE | Portfolio 中英双语版</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for Premium UI Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Google Fonts: Inter & Noto Sans SC -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Noto+Sans+SC:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --glass-bg: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --accent-purple: #A855F7;
+        }
+        body {
+            font-family: 'Inter', 'Noto Sans SC', sans-serif;
+            scroll-behavior: smooth;
+            background-color: #fdfcff;
+            overflow-x: hidden;
+        }
+        
+        /* --- Glassmorphism UI Effects --- */
+        .glass-button {
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(15px) saturate(180%);
+            -webkit-backdrop-filter: blur(15px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+            transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+        .glass-button:hover {
+            background: rgba(255, 255, 255, 0.6);
+            transform: translateY(-2px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 12px 40px 0 rgba(168, 85, 247, 0.15);
+        }
+        .glass-button.active {
+            background: rgba(168, 85, 247, 0.1);
+            border-color: rgba(168, 85, 247, 0.4);
+            color: #A855F7;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-radius: 2rem;
+            transition: all 0.4s ease;
+        }
+        .glass-card:hover {
+            border-color: var(--accent-purple);
+            background: rgba(255, 255, 255, 0.8);
+        }
+
+        .nav-blur {
+            backdrop-filter: blur(20px);
+            background-color: rgba(255, 255, 255, 0.7);
+        }
+
+        /* --- Fullscreen Video Hero --- */
+        .hero-fullscreen {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            background: #000;
+        }
+        .hero-bg {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 0;
+            opacity: 0.6;
+        }
+
+        /* --- Interactive Card Deck (Core Expertise) --- */
+        .card-deck {
+            position: relative;
+            height: 550px;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            perspective: 1500px;
+        }
+        .draw-card {
+            position: absolute;
+            width: 320px;
+            height: 440px;
+            border-radius: 2.5rem;
+            overflow: hidden;
+            background: #fff;
+            box-shadow: 0 10px 30px -5px rgba(0,0,0,0.1);
+            transition: all 0.7s cubic-bezier(0.23, 1, 0.32, 1);
+            cursor: pointer;
+            border: 1px solid rgba(255,255,255,0.8);
+            transform-origin: center bottom;
+        }
+        .draw-card:nth-child(1) { transform: rotate(-6deg) translateX(-60px); z-index: 10; }
+        .draw-card:nth-child(2) { transform: rotate(-2deg) translateX(-20px); z-index: 20; }
+        .draw-card:nth-child(3) { transform: rotate(2deg) translateX(20px); z-index: 30; }
+        .draw-card:nth-child(4) { transform: rotate(6deg) translateX(60px); z-index: 40; }
+        .draw-card:hover {
+            transform: translateY(-80px) rotate(0deg) scale(1.05) !important;
+            z-index: 100 !important;
+            box-shadow: 0 50px 80px -20px rgba(168, 85, 247, 0.4);
+        }
+
+        /* --- Elegant Masonry Responsive Layout --- */
+        .masonry-container {
+            column-count: 1;
+            column-gap: 1.5rem;
+        }
+        @media (min-width: 768px) { .masonry-container { column-count: 2; } }
+        @media (min-width: 1280px) { .masonry-container { column-count: 3; } }
+        
+        .masonry-item {
+            break-inside: avoid;
+            margin-bottom: 1.5rem;
+            border-radius: 2rem;
+            overflow: hidden;
+            transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+            position: relative;
+            background: #f8fafc;
+        }
+        
+        /* --- Carousel Mechanics --- */
+        .carousel-wrapper {
+            position: relative;
+            width: 100%;
+            overflow: hidden;
+        }
+        .carousel-track {
+            display: flex;
+            transition: transform 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+        .carousel-slide {
+            min-width: 100%;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+        .carousel-slide img {
+            width: 100%;
+            display: block;
+            object-fit: cover;
+        }
+        
+        .carousel-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 10;
+        }
+        .masonry-item:hover .carousel-btn { opacity: 1; }
+        .prev-btn { left: 12px; }
+        .next-btn { right: 12px; }
+
+        .carousel-dots {
+            position: absolute;
+            bottom: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 6px;
+            z-index: 10;
+        }
+        .dot {
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.4);
+            transition: all 0.3s ease;
+        }
+        .dot.active {
+            width: 15px;
+            border-radius: 10px;
+            background: white;
+        }
+
+        .item-info {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent 60%);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 1.5rem;
+            color: white;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            pointer-events: none;
+        }
+        .masonry-item:hover .item-info { opacity: 1; }
+
+        /* --- Scroll Animation Reveals --- */
+        .reveal { opacity: 0; transform: translateY(30px); transition: all 0.8s; }
+    .reveal.active { opacity: 1; transform: translateY(0); }
+
+        .profile-container {
+            position: relative;
+            padding-right: 15px;
+            padding-bottom: 15px;
+            max-width: 380px; 
+            margin: 0 auto;
+        }
+        .profile-image {
+            width: 100%;
+            height: auto;
+            border-radius: 1.8rem;
+            object-fit: cover;
+            box-shadow: 12px 12px 0px rgba(168, 85, 247, 0.05);
+        }
+        .profile-float-tag {
+            position: absolute;
+            bottom: 25px;
+            right: -15px;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 0.7rem 1.2rem;
+            border-radius: 1.2rem;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        /* --- Lightbox / Fullscreen Viewer --- */
+        #lightbox {
+            position: fixed;
+    inset: 0;
+    z-index: 1000;
+    background: rgba(0,0,0,0.9);
+    backdrop-filter: blur(15px);
+    display: none; /* 默认隐藏 */
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+}
+        #lightbox-content img, 
+    #lightbox-content video {
+        max-width: 100%;
+        max-height: 85vh;
+        object-fit: contain;
+        border-radius: 1rem;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+    }
+        
+        @media (max-width: 640px) {
+            .hero-fullscreen h1 { font-size: 3.5rem; }
+        }
+    </style>
+</head>
+<body class="selection:bg-purple-100">
+
+    <!-- 灯箱 / Lightbox -->
+   <div id="lightbox" class="fixed inset-0 z-[1000] bg-black/90 backdrop-blur-md hidden items-center justify-center p-4" onclick="closeLightbox()">
+    <button class="absolute top-8 right-8 text-white/50 hover:text-white text-3xl transition" onclick="closeLightbox()">
+        <i class="fa-solid fa-xmark"></i>
+    </button>
+    <div id="lightbox-content" onclick="event.stopPropagation()" class="flex items-center justify-center max-w-5xl w-full"></div>
+</div>
+  
+    <!-- 导航栏 / Navigation -->
+    <nav class="fixed top-0 w-full z-[100] nav-blur border-b border-slate-100">
+        <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+            <div class="text-2xl font-black tracking-tighter flex items-center group cursor-pointer" onclick="window.scrollTo(0,0)">
+                <div class="w-10 h-10 bg-slate-900 group-hover:bg-purple-600 rounded-xl flex items-center justify-center text-white mr-3 transition-all duration-500 rotate-3 group-hover:rotate-12">Y</div>
+               PORTFOLIO<span class="text-purple-600">.</span>
+            </div>
+            <div class="hidden md:flex items-center space-x-8 font-bold text-[10px] uppercase tracking-[0.2em] text-slate-500">
+                <a href="#about" class="hover:text-purple-600 transition">关于 / About</a>
+                <a href="#featured" class="hover:text-purple-600 transition">精选 / Highlight</a>
+                <a href="#gallery" class="hover:text-purple-600 transition">作品 / Showcase</a>
+                <a href="#contact" class="glass-button px-8 py-3 rounded-full text-slate-900 border border-purple-100 uppercase tracking-widest">联系方式 / Contact</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 首页 / Hero -->
+    <section id="home" class="relative min-h-screen w-full flex items-center justify-center overflow-hidden" style="background-color: #000;">
+        <video 
+            autoplay 
+            muted 
+            loop 
+            playsinline 
+            class="absolute top-0 left-0 w-full h-full object-cover z-0">
+            <source src="https://raw.githubusercontent.com/sssyee28-create/video-host/main/dreamina-2026-05-12-8926.mp4" type="video/mp4">
+        </video>
+
+        <div class="absolute top-0 left-0 w-full h-full bg-black/40 z-10"></div>
+
+        <div class="relative z-20 text-center px-6">
+            <h1 class="reveal text-7xl md:text-9xl font-black text-white tracking-tighter leading-none mb-8">
+                SUEYEE<br>
+                <span style="-webkit-text-stroke: 1.5px white; color: transparent;">PORTFOLIO</span>
+            </h1>
+            
+            <div class="reveal mt-10" style="transition-delay: 300ms;">
+                <a href="#gallery" class="px-10 py-4 rounded-full text-white border border-white/20 font-bold tracking-widest text-xs uppercase inline-block" 
+                   style="background: var(--glass-bg, rgba(255,255,255,0.1)); backdrop-filter: blur(10px);">
+                    浏览 / Explore
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- 关于我 / About Me -->
+    <section id="about" class="py-32 px-6 bg-slate-50">
+        <div class="max-w-7xl mx-auto">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-20 items-center">
+                
+                <!-- 个人照片列 / Profile Photo -->
+                <div class="lg:col-span-4 reveal">
+                    <div class="profile-container">
+                        <img src="https://raw.githubusercontent.com/sssyee28-create/Opus/refs/heads/main/ChatGPT%20Image%202026年5月12日%2014_48_38.png" alt="Portrait" class="profile-image">
+                        <div class="profile-float-tag">
+                            <div class="w-7 h-7 rounded-full bg-purple-600 flex items-center justify-center text-white">
+                                <i class="fa-solid fa-bolt text-[9px]"></i>
+                            </div>
+                            <div class="flex flex-col">
+                                <span class="text-[7px] font-black uppercase text-slate-400 tracking-tighter">Current Status</span>
+                                <span class="text-[10px] font-bold text-slate-900">接受委约 / Available</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 介绍与经历 / Intro & Experience -->
+                <div class="lg:col-span-8 space-y-12">
+                    <div class="space-y-8 reveal">
+                        <div class="inline-block glass-button px-6 py-2 rounded-full text-[10px] font-black tracking-widest text-purple-600 uppercase">
+                            关于 / About
+                        </div>
+                        <h2 class="text-5xl md:text-6xl font-black text-slate-900 leading-[0.9] tracking-tighter">
+                            <br>吴婌瑜 <span class="text-purple-600">GO</span> SUE YEE
+                        </h2>
+                        <p class="text-slate-500 text-lg leading-relaxed font-light max-w-3xl">
+                            你好！我毕业于台湾健行科技大学，获多媒体设计学士学位，拥有2年以上平面设计经验及2年远程工作经验，擅长客户沟通、创意设计及项目交付。<br>
+                            <span class="text-sm uppercase tracking-wider text-slate-400 mt-2 block italic">Bachelor of Multimedia Design from Taiwan Chien-Hsin University, with 2+ years of graphic design and 2 years of remote work experience, skilled in client communication, creativity and project delivery.</span>
+                        </p>
+                    </div>
+
+                    <div class="space-y-4 reveal" style="transition-delay: 200ms;">
+                        <!-- 经历 01 -->
+                        <div class="glass-card p-6 flex flex-col md:flex-row md:items-center justify-between group">
+                            <div class="space-y-1">
+                                <span class="text-[10px] font-black text-purple-500 tracking-widest uppercase">03/2022 - 11/2022</span>
+                                <h3 class="text-xl font-black text-slate-900">美工 / Graphic Artist</h3>
+                                <p class="text-slate-400 text-sm italic">GuangTai Printing Factory, Taiwan</p>
+                            </div>
+                            <div class="mt-4 md:mt-0 text-slate-500 text-sm max-w-xs md:text-right font-medium">
+                                协同全链路视觉产出，助力商业目标达成<br>Collaborating on end-to-end production to support business objectives
+                            </div>
+                        </div>
+
+                        <!-- 经历 02 -->
+                        <div class="glass-card p-6 flex flex-col md:flex-row md:items-center justify-between group">
+                            <div class="space-y-1">
+                                <span class="text-[10px] font-black text-purple-500 tracking-widest uppercase">02/2023 - 04/2024</span>
+                                <h3 class="text-xl font-black text-slate-900">美术编辑 / Art Editor</h3>
+                                <p class="text-slate-400 text-sm italic">TAN KAH KEE FOUNDATION, KL</p>
+                            </div>
+                            <div class="mt-4 md:mt-0 text-slate-500 text-sm max-w-xs md:text-right font-medium">
+                               参与大型活动周期视觉执行，保障多维度创意落地<br>Collaborating on full-cycle production and execution for large-scale events
+                            </div>
+                        </div>
+
+                        <!-- 经历 03 -->
+                        <div class="glass-card p-6 flex flex-col md:flex-row md:items-center justify-between group">
+                            <div class="space-y-1">
+                                <span class="text-[10px] font-black text-purple-500 tracking-widest uppercase">05/2024 - Present</span>
+                                <h3 class="text-xl font-black text-slate-900">平面设计师 / JR.GRAPHIC DESIGNER</h3>
+                                <p class="text-slate-400 text-sm italic">STEPPE MARKETING AGENCY, SETAPAK</p>
+                            </div>
+                            <div class="mt-4 md:mt-0 text-slate-500 text-sm max-w-xs md:text-right font-medium">
+                                整合多媒介创意内容，协同提升数字化传播影响力<br>Integrating multi-media content to support digital engagement
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- 核心专长 / Core Expertise -->
+    <section id="featured" class="py-32 px-6 bg-white overflow-hidden border-t border-slate-100">
+        <div class="max-w-7xl mx-auto relative text-center">
+            <h2 class="text-5xl font-black text-slate-900 uppercase tracking-tight mb-16 reveal">精选 / HIGHLIGHT</h2>
+            <div class="card-deck reveal">
+                <div class="draw-card" onclick="openLightboxImg('https://raw.githubusercontent.com/sssyee28-create/Opus/main/Github/video/%E6%8A%BD%E5%8D%A1/ChatGPT%20Image%202026%E5%B9%B45%E6%9C%8812%E6%97%A5%2016_49_23.png')">
+                    <img src="https://raw.githubusercontent.com/sssyee28-create/Opus/main/Github/video/%E6%8A%BD%E5%8D%A1/ChatGPT%20Image%202026%E5%B9%B45%E6%9C%8812%E6%97%A5%2016_49_23.png" class="w-full h-full object-cover" alt="Card 1">
+                </div>
+                <div class="draw-card" onclick="openLightboxImg('https://raw.githubusercontent.com/sssyee28-create/Opus/refs/heads/main/Github/video/抽卡/ChatGPT%20Image%202026年5月25日%2012_53_50.png')">
+                    <img src="https://raw.githubusercontent.com/sssyee28-create/Opus/refs/heads/main/Github/video/抽卡/ChatGPT%20Image%202026年5月25日%2012_53_50.png" class="w-full h-full object-cover" alt="Card 2">
+                </div>
+                <div class="draw-card" onclick="openLightboxImg('https://raw.githubusercontent.com/sssyee28-create/Opus/refs/heads/main/Github/video/抽卡/ChatGPT%20Image%202026年5月12日%2017_17_36.png')">
+                    <img src="https://raw.githubusercontent.com/sssyee28-create/Opus/refs/heads/main/Github/video/抽卡/ChatGPT%20Image%202026年5月12日%2017_17_36.png" class="w-full h-full object-cover" alt="Card 3">
+                </div>
+                <div class="draw-card" onclick="openLightboxImg('https://raw.githubusercontent.com/sssyee28-create/Opus/refs/heads/main/Github/video/抽卡/ChatGPT%20Image%202026年5月25日%2013_59_14.png')">
+                    <img src="https://raw.githubusercontent.com/sssyee28-create/Opus/refs/heads/main/Github/video/抽卡/ChatGPT%20Image%202026年5月25日%2013_59_14.png" class="w-full h-full object-cover" alt="Card 4">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 作品库 / Archive -->
+    <section id="gallery" class="py-32 px-6 bg-slate-50">
+        <div class="max-w-[1600px] mx-auto">
+            <div class="flex flex-col xl:flex-row items-end justify-between mb-20 reveal gap-8">
+                <div>
+                    <h2 class="text-6xl font-black tracking-tighter text-slate-900 uppercase">作品库 / SHOWCASE</h2>
+                    <p class="text-slate-400 mt-4 uppercase tracking-[0.3em] text-[10px] font-bold" id="archive-count-text">PROJECTS • 视觉与精选多态展示 / MULTI-STYLISH CAROUSEL ARCHIVE</p>
+                </div>
+                <!-- 分类筛选 / Filters -->
+                <div class="flex flex-wrap gap-3" id="filter-btns">
+                    <button data-filter="all" class="glass-button px-8 py-3 rounded-full text-[10px] font-black tracking-widest active">全部 / ALL</button>
+                    <button data-filter="video" class="glass-button px-8 py-3 rounded-full text-[10px] font-black tracking-widest text-slate-500">短视频 / VIDEO</button>
+                    <button data-filter="content" class="glass-button px-8 py-3 rounded-full text-[10px] font-black tracking-widest text-slate-500">懒人包内容 / CAROUSEL</button>
+                    <button data-filter="social" class="glass-button px-8 py-3 rounded-full text-[10px] font-black tracking-widest text-slate-500">社交媒体 / SOCIAL MEDIA</button>
+                    <button data-filter="print" class="glass-button px-8 py-3 rounded-full text-[10px] font-black tracking-widest text-slate-500">印刷 / PRINT</button>
+                </div>
+            </div>
+            <div class="masonry-container reveal" id="masonry-grid"></div>
+        </div>
+    </section>
+
+    <!-- 页脚 / Footer -->
+    <footer id="contact" class="pt-32 pb-16 px-6 bg-slate-900 text-white rounded-t-[5rem]">
+        <div class="max-w-7xl mx-auto">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-12 mb-24 text-center md:text-left">
+                <div class="space-y-6">
+                    <h2 class="text-6xl font-black">准备好<span class="text-purple-500">了解</span>了吗？<br>LET'S <span class="text-purple-500">TALK</span>.</h2>
+                    <p class="text-slate-400 text-lg font-light">倾听每个想法，把创意稳稳地变成现实。<br>Listening To Every Idea And Making Creativity Happen.</p>
+                </div>
+                <div class="flex flex-wrap justify-center gap-4">
+                    <a href="https://wa.me/60174112634" target="_blank" class="glass-button px-8 py-4 rounded-full flex items-center space-x-3 hover:bg-white/10">
+                        <i class="fa-brands fa-whatsapp text-white"></i>
+                        <span class="text-xs font-black uppercase text-white">WhatsApp</span>
+                    </a>
+                    <a href="https://www.instagram.com/sssueyee/" target="_blank" class="glass-button px-8 py-4 rounded-full flex items-center space-x-3 hover:bg-white/10">
+                        <i class="fa-brands fa-instagram text-white"></i>
+                        <span class="text-xs font-black uppercase text-white">INSTAGRAM</span>
+                    </a>
+                    <a href="mailto:sssyee28@gmail.com" class="glass-button px-8 py-4 rounded-full flex items-center space-x-3 hover:bg-white/10">
+                        <i class="fa-solid fa-envelope text-white"></i>
+                        <span class="text-xs font-black uppercase text-white">电邮 / EMAIL</span>
+                    </a>
+                </div>
+            </div>
+            <div class="pt-12 border-t border-white/5 text-[9px] font-black tracking-widest text-white/20 text-center uppercase">
+                &copy; 2026 SUE YEE / DESIGN PORTFOLIO / ALL RIGHTS RESERVED
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        const grid = document.getElementById('masonry-grid');
+    const catMap = { 'video': '动态', 'content': '内容', 'social': '社交', 'print': '平面' };
+
+        // 包含中英双语、各板块精美项目的科学策划集
+        const projectTitles = {
+            video: [
+                "《蜀香十里》POV美食内容 / POV Food Content",
+                "《大爷食堂》招牌推荐 / F&B Signature Dish Promo",
+                "《SHOWIT》ASMR沉浸式 / Salon ASMR",
+                "《ARZO HAIR STUDIO》染发美学 / Salon Hair Color Aesthetic",
+                "《GLOWAX》除毛限时五折活动 / Laser Hair Removal Promo Campaign",
+                "《The Skin Boutique》净肤焕亮激光 / Skin Resurfacing Laser Campaign",
+                "《Atops》医美知识科普 / Medical Aesthetics Educational Animation",
+                "《SGEN》产品推广 / Collagen Supplement Product Campaign Animation",
+                " AI人物多视角 / Multi-view AI Character"
+            ],
+            print: [
+                "菜单设计 / Menu Design",
+                "门面视觉贴纸 / Storefront Signage & Decal Design",
+                "墙面视觉海报设计 / Environmental Graphics & Poster Design",
+                "墙面视觉海报设计 / Environmental Graphics & Poster Design",
+                "促销横幅与视觉设计 / Promotional Banner & Visual Design",
+                "墙面视觉海报设计 / Environmental Graphics & Poster Design",
+                "促销海报优惠卷设计 / Promo Standee & Vouchers Design",
+                "华社活动视觉与书籍设计 / Cultural Branding & Editorial Design"
+            ],
+            content: [
+                "《大爷食堂》 / DAYEH Restaurant Carousel",
+                "《槟咖》 / BINKA Restaurant Carousel",
+                "《KYO CANTEEN》 / Japanese Canteen Carousel",
+                "《鸡煲传说》 / JC Chicken Pot Carousel",
+                "《啦啦煲》 / OH-LA-LA Carousel",
+                "《潮州滑鸡饭》 / ZHAIHONG Chicken Rice Carousel",
+                "《CM Plus》 / CM Plus Plus-Size Fashion Carousel",
+                "《DG Optical》 / DG Optical Eyewear Aesthetic Carousel",
+                "《INTIMEZ》中古名表 / INTIMEZ Pre-owned Luxury Watch Carousel",
+                "《枫琳》养生馆 / FENGLIN Wellness Carousel",
+                "《Klang Organic Home》轻断食营 / Intermittent Fasting Program Carousel",
+                "《MKAI》防盗保险箱 / MKAI Security Safe Carousel"
+            ],
+            social: [
+                "《Lush & Glow》/ Monthly Social Media Post",
+                "《8titude》/ Monthly Social Media Post",
+                "《Evesthetique》/ Monthly Social Media Post",
+                "《Therapie》 / Monthly Social Media Post",
+                "《Algeness》 / Monthly Social Media Post",
+                "《S.LITE》 / Monthly Social Media Post",
+                "《楗柏Jian Bo》/ Monthly Social Media Post",
+                "《KYO Canteen》/ Monthly Social Media Post",
+                "《VinWine Bar》/ Monthly Social Media Post",
+                "《The Skin Boutique》/ Monthly Social Media Post",
+                "《TAMATASHI》 / Monthly Social Media Post",
+                "《Xpress Bereavement Care》 / Monthly Social Media Post",
+                "《SHOW IT》 / Monthly Social Media Post",
+                "《The HairLab》/ Monthly Social Media Post",
+                "《XG Coating》/ Monthly Social Media Post",
+                "《Tint N Wrap》/ Monthly Social Media Post",
+                "《XG Autobath》/ Monthly Social Media Post",
+                "《Ace Fitness》 / Monthly Social Media Post",
+                "《Steppe》 / Monthly Social Media Post",
+                "《Amazing SME》 / Monthly Social Media Post", 
+            ]
+        };
+
+        // 完美混排 50 个项目的核心交错序列
+        // 9 video, 8 print, 13 content, 20 social，完美无瑕错位
+        const itemSequence = [
+  'video', 'video', 'video', 'video', 'video', 'video', 'video', 'video', 'video', 
+  'social', 'social', 'social', 'social', 'social', 'social', 'social', 'social', 'social', 'social', 'social',
+  'social', 'social', 'social', 'social', 'social', 'social', 'social', 'social', 'social',
+  'print', 'print', 'print', 'print', 'print', 'print', 'print', 'print',
+  'content', 'content', 'content', 'content', 'content', 'content', 'content', 'content',
+  'content', 'content', 'content', 'content', // 此处添加逗号
+];
+
+        // 各分类读取进度索引
+        const indices = { video: 0, print: 0, content: 0, social: 0 };
+
+        // 预定义高清 Unsplash 图像集，以体现真实设计调性
+        const videoImageIDs = [
+            'https://raw.githubusercontent.com/sssyee28-create/Opus/main/video/01.mp4', // cinema
+            'https://raw.githubusercontent.com/sssyee28-create/Opus/main/video/02.mp4', // photographer
+            'https://raw.githubusercontent.com/sssyee28-create/Opus/main/video/03.mp4', // videographer
+            'https://raw.githubusercontent.com/sssyee28-create/Opus/main/video/04.mp4', // video editor
+            'https://raw.githubusercontent.com/sssyee28-create/Opus/main/video/05.mp4', // motion graphics
+            'https://raw.githubusercontent.com/sssyee28-create/Opus/main/video/06.mp4', // camera lens
+            'https://raw.githubusercontent.com/sssyee28-create/Opus/main/video/07.mp4', // movie theatre
+            'https://raw.githubusercontent.com/sssyee28-create/Opus/main/video/08.mp4', // cinema stage
+            'https://raw.githubusercontent.com/sssyee28-create/Opus/main/video/09.mp4' // vintage camera          
+        ];
+
+        const printImageIDs = [
+    ['01.png', '01-01.png', '01-01-01.png'],
+    ['02.png', '02-02.png', '02-02-02.png'],
+    ['03.png', '03-03.png', '03-03-03.png'],
+    ['04.png', '04-04.png', '04-04-04.png'],
+    ['05.png', '05-05.png', '05-05-05.png'],
+    ['06.png', '06-06.png', '06-06-06.png'],
+    ['07.png', '07-07.png', '07-07-07.png'],
+    ['08.png', '08-08.png', '08-08-08.png']
+];
+
+        const contentImageIDs = [
+    ['01.png', '01-01-01.png', '01-01-02.png'],
+    ['02.png', '02-02-01.png', '02-02-02.png'],
+    ['03.png', '03-03-01.png', '03-03-02.png'],
+    ['04.png', '04-04-01.png', '04-04-02.png'],      
+    ['05.png', '05-05-01.png', '05-05-02.png'],
+    ['06.png', '06-06-01.png', '06-06-02.png'],
+    ['07.png', '07-07-01.png', '07-07-02.png'],
+    ['08.png', '08-08-01.png', '08-08-02.png'],        
+    ['09.png', '09-09-01.png', '09-09-02.png'],
+    ['10.png', '10-10-01.png', '10-10-02.png'],
+    ['11.png', '11-11-01.png', '11-11-02.png'],
+    ['12.png', '12-12-01.png', '12-12-02.png'],       
+    ['13.png', '13-13-01.png', '13-13-02.png'],               
+];
+
+        const socialImageIDs = [
+    ['01.png', '01-1.png', '01-1-1.png'],
+    ['02.png', '02-2.png', '02-2-2.png'],
+    ['03.png', '03-3.png', '03-3-3.png'],
+    ['04.png', '04-4.png', '04-4-4.png'],      
+    ['05.png', '05-5.png', '05-5-5.png'],
+    ['06.png', '06-6.png', '06-6-6.png'],
+    ['07.png', '07-7.png', '07-7-7.png'],
+    ['08.png', '08-8.png', '08-8-8.png'],        
+    ['09.png', '09-9.png', '09-9-9.png'],
+    ['10.png', '10-10.png', '10-10-10.png'],
+    ['11.png', '11-11.png', '11-11-11.png'],
+    ['12.png', '12-12.png', '12-12-12.png'],       
+    ['13.png', '13-13.png', '13-13-13.png'], 
+    ['14.png', '14-14.png', '14-14-14.png'],
+    ['15.png', '15-15.png', '15-15-15.png'],
+    ['16.png', '16-16.png', '16-16-16.png'],       
+    ['17.png', '17-17.png', '17-17-17.png'],       
+    ['18.png', '18-18.png', '18-18-18.png'],
+    ['19.png', '19-19.png', '19-19-19.png'],       
+    ['20.png', '20-20.png', '20-20-20.png'],          
+];
+
+        // 动态循环生成项目卡片
+        for (let i = 0; i < itemSequence.length; i++) {
+            const cat = itemSequence[i];
+            // 确保每个卡片获取唯一的 titleText
+            const titleText = (projectTitles[cat] && projectTitles[cat][indices[cat] % projectTitles[cat].length]) || `创意设计项目 / Creative Design Work`;
+
+            const height = Math.floor(Math.random() * (560 - 410) + 410); 
+            const item = document.createElement('div');
+            item.className = 'masonry-item reveal';
+            item.setAttribute('data-cat', cat);
+
+            if (cat === 'video') {
+                const videoUrl = videoImageIDs[indices.video % videoImageIDs.length];
+                
+                item.innerHTML = `
+                    <div class="relative w-full overflow-hidden cursor-pointer" style="height: ${height}px;" onclick="openLightbox('${videoUrl}', true)">
+                        <video src="${videoUrl}" 
+                               class="w-full h-full object-cover transition duration-700 hover:scale-110 ease-out" 
+                               muted loop playsinline onmouseover="this.play()" onmouseout="this.pause()">
+                        </video>
+                        <div class="absolute top-4 right-4 w-10 h-10 bg-black/60 backdrop-blur-md rounded-full flex items-center justify-center text-white text-xs">
+                            <i class="fa-solid fa-play"></i>
+                        </div>
+                    </div>
+                    <div class="item-info">
+                        <span class="text-[9px] font-black uppercase tracking-widest text-purple-400 mb-2">${catMap[cat]} / ${cat.toUpperCase()}</span>
+                        <h4 class="font-black text-xl leading-tight">${titleText}</h4>
+                    </div>
+                `;
+                indices.video++;
+            } else {
+                // --- 图片类卡片渲染 ---
+                let currentSet;
+                if (cat === 'print') {
+                    currentSet = printImageIDs[indices['print'] % printImageIDs.length];
+                    indices['print']++;
+                } else if (cat === 'content') {
+                    currentSet = contentImageIDs[indices['content'] % contentImageIDs.length];
+                    indices['content']++;
+                } else if (cat === 'social') {
+                    currentSet = socialImageIDs[indices['social'] % socialImageIDs.length];
+                    indices['social']++;
+                }
+
+                const carouselId = `carousel-${i}`;
+                const slidesHtml = currentSet.map(imgName => {
+                    let folderPath = cat === 'print' ? 'print' : cat;
+                    const fullUrl = `https://raw.githubusercontent.com/sssyee28-create/Opus/main/${folderPath}/${imgName}`;
+                    // 修正：正确的点击事件调用，传入 false 表示是图片
+                    return `
+                        <div class="carousel-slide" onclick="openLightbox('${fullUrl}', false)">
+                            <img src="${fullUrl}" style="height: ${height}px;" class="w-full object-cover" alt="Slide">
+                        </div>`;
+                }).join('');
+
+                item.innerHTML = `
+                    <div class="carousel-wrapper" id="${carouselId}" data-current="0">
+                        <div class="carousel-track">${slidesHtml}</div>
+                        <button class="carousel-btn prev-btn" onclick="event.stopPropagation(); moveCarousel(this, -1)">
+                            <i class="fa-solid fa-chevron-left text-[10px]"></i>
+                        </button>
+                        <button class="carousel-btn next-btn" onclick="event.stopPropagation(); moveCarousel(this, 1)">
+                            <i class="fa-solid fa-chevron-right text-[10px]"></i>
+                        </button>
+                        <div class="carousel-dots">
+                            ${currentSet.map((_, idx) => `<div class="dot ${idx === 0 ? 'active' : ''}"></div>`).join('')}
+                        </div>
+                    </div>
+                    <div class="item-info">
+                        <span class="text-[9px] font-black uppercase tracking-widest text-purple-400 mb-2">${catMap[cat]} / ${cat.toUpperCase()}</span>
+                        <h4 class="font-black text-xl leading-tight">${titleText}</h4>
+                    </div>
+                `;
+            }
+            grid.appendChild(item);
+        }
+
+        // 轮播逻辑 (适用于 print, content, social)
+        window.moveCarousel = function(btn, direction) {
+            const wrapper = btn.closest('.carousel-wrapper');
+            const track = wrapper.querySelector('.carousel-track');
+            const dots = wrapper.querySelectorAll('.dot');
+            let current = parseInt(wrapper.getAttribute('data-current')) || 0;
+            const total = 3;
+            
+            current = (current + direction + total) % total;
+            wrapper.setAttribute('data-current', current);
+            track.style.transform = `translateX(-${current * 100}%)`;
+            
+            dots.forEach((dot, idx) => {
+                dot.classList.toggle('active', idx === current);
+            });
+        };
+
+ // --- 灯箱控制逻辑 ---
+        const lightbox = document.getElementById('lightbox');
+        const lightboxContent = document.getElementById('lightbox-content');
+
+        // 统一打开灯箱的函数
+        window.openLightbox = function(url, isVideo) {
+            if (isVideo) {
+                lightboxContent.innerHTML = `<video src="${url}" controls autoplay class="w-full rounded-2xl"></video>`;
+            } else {
+                lightboxContent.innerHTML = `<img src="${url}" class="max-w-full max-h-[85vh] mx-auto rounded-2xl">`;
+            }
+            lightbox.classList.remove('hidden');
+            lightbox.classList.add('flex');
+            lightbox.style.display = 'flex';
+        };
+
+        // 统一关闭灯箱的函数
+        window.closeLightbox = function() {
+            lightbox.classList.add('hidden');
+            lightbox.classList.remove('flex');
+            lightbox.style.display = 'none';
+            lightboxContent.innerHTML = '';
+        };
+
+        // 兼容图片板块的旧接口
+        window.openLightboxImg = function(src) {
+            window.openLightbox(src, false);
+        };
+
+        // 筛选功能
+        const filterBtns = document.querySelectorAll('#filter-btns .glass-button');
+        filterBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                filterBtns.forEach(b => { 
+                    b.classList.remove('active'); 
+                    b.classList.add('text-slate-500'); 
+                });
+                btn.classList.add('active');
+                btn.classList.remove('text-slate-500');
+                
+                const filter = btn.getAttribute('data-filter');
+                const items = document.querySelectorAll('.masonry-item');
+                
+                items.forEach(item => {
+                    const match = filter === 'all' || item.getAttribute('data-cat') === filter;
+                    item.style.display = match ? 'block' : 'none';
+                    // 重新平滑触发入场动效
+                    if(match) {
+                        item.classList.remove('active');
+                        setTimeout(() => item.classList.add('active'), 10);
+                    }
+                });
+            });
+        });
+
+        // 滚动入场动效监听
+        const revealObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('active');
+                }
+            });
+        }, { threshold: 0.1 });
+
+        // 页面初始化加载时绑定全部进入动画元素
+        document.addEventListener("DOMContentLoaded", () => {
+            document.querySelectorAll('.reveal').forEach(el => {
+                revealObserver.observe(el);
+            });
+        });
+    </script>
+</body>
+</html>
