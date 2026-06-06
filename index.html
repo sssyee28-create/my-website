@@ -264,6 +264,44 @@
         border-radius: 1rem;
         box-shadow: 0 20px 40px rgba(0,0,0,0.5);
     }
+        .lightbox-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.12);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.3s ease, opacity 0.3s ease;
+            z-index: 1001;
+        }
+        .lightbox-nav:hover { background: rgba(255,255,255,0.24); }
+        .lightbox-prev { left: 2rem; }
+        .lightbox-next { right: 2rem; }
+        #lightbox-counter {
+            position: absolute;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(255,255,255,0.72);
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+        }
+        @media (max-width: 640px) {
+            .lightbox-nav {
+                width: 40px;
+                height: 40px;
+                background: rgba(255,255,255,0.18);
+            }
+            .lightbox-prev { left: 0.75rem; }
+            .lightbox-next { right: 0.75rem; }
+            #lightbox-counter { bottom: 1rem; }
+        }
         
         @media (max-width: 640px) {
             .hero-fullscreen h1 { font-size: 3.5rem; }
@@ -277,7 +315,14 @@
     <button class="absolute top-8 right-8 text-white/50 hover:text-white text-3xl transition" onclick="closeLightbox()">
         <i class="fa-solid fa-xmark"></i>
     </button>
+    <button id="lightbox-prev" class="lightbox-nav lightbox-prev hidden" onclick="event.stopPropagation(); moveLightbox(-1)">
+        <i class="fa-solid fa-chevron-left"></i>
+    </button>
+    <button id="lightbox-next" class="lightbox-nav lightbox-next hidden" onclick="event.stopPropagation(); moveLightbox(1)">
+        <i class="fa-solid fa-chevron-right"></i>
+    </button>
     <div id="lightbox-content" onclick="event.stopPropagation()" class="flex items-center justify-center max-w-5xl w-full"></div>
+    <div id="lightbox-counter" class="hidden"></div>
 </div>
   
     <!-- 导航栏 / Navigation -->
@@ -661,12 +706,14 @@
                 }
 
                 const carouselId = `carousel-${i}`;
-                const slidesHtml = currentSet.map(imgName => {
+                const fullUrls = currentSet.map(imgName => {
                     let folderPath = cat === 'print' ? 'print' : cat;
-                    const fullUrl = `https://raw.githubusercontent.com/sssyee28-create/Opus/main/${folderPath}/${imgName}`;
-                    // 修正：正确的点击事件调用，传入 false 表示是图片
+                    return `https://raw.githubusercontent.com/sssyee28-create/Opus/main/${folderPath}/${imgName}`;
+                });
+                const lightboxUrls = encodeURIComponent(JSON.stringify(fullUrls));
+                const slidesHtml = fullUrls.map((fullUrl, idx) => {
                     return `
-                        <div class="carousel-slide" onclick="openLightbox('${fullUrl}', false)">
+                        <div class="carousel-slide" onclick="openLightboxGallery('${lightboxUrls}', ${idx})">
                             <img src="${fullUrl}" style="height: ${height}px;" class="w-full object-cover" alt="Slide">
                         </div>`;
                 }).join('');
@@ -713,9 +760,30 @@
  // --- 灯箱控制逻辑 ---
         const lightbox = document.getElementById('lightbox');
         const lightboxContent = document.getElementById('lightbox-content');
+        const lightboxPrev = document.getElementById('lightbox-prev');
+        const lightboxNext = document.getElementById('lightbox-next');
+        const lightboxCounter = document.getElementById('lightbox-counter');
+        let lightboxItems = [];
+        let lightboxIndex = 0;
+        let touchStartX = 0;
+
+        function renderLightboxImage() {
+            const url = lightboxItems[lightboxIndex];
+            lightboxContent.innerHTML = `<img src="${url}" class="max-w-full max-h-[85vh] mx-auto rounded-2xl">`;
+            lightboxCounter.textContent = `${lightboxIndex + 1} / ${lightboxItems.length}`;
+        }
+
+        function setLightboxGalleryControls(show) {
+            lightboxPrev.classList.toggle('hidden', !show);
+            lightboxNext.classList.toggle('hidden', !show);
+            lightboxCounter.classList.toggle('hidden', !show);
+        }
 
         // 统一打开灯箱的函数
         window.openLightbox = function(url, isVideo) {
+            lightboxItems = [];
+            lightboxIndex = 0;
+            setLightboxGalleryControls(false);
             if (isVideo) {
                 lightboxContent.innerHTML = `<video src="${url}" controls autoplay class="w-full rounded-2xl"></video>`;
             } else {
@@ -726,18 +794,56 @@
             lightbox.style.display = 'flex';
         };
 
+        window.openLightboxGallery = function(encodedUrls, startIndex) {
+            lightboxItems = JSON.parse(decodeURIComponent(encodedUrls));
+            lightboxIndex = startIndex || 0;
+            setLightboxGalleryControls(lightboxItems.length > 1);
+            renderLightboxImage();
+            lightbox.classList.remove('hidden');
+            lightbox.classList.add('flex');
+            lightbox.style.display = 'flex';
+        };
+
+        window.moveLightbox = function(direction) {
+            if (lightboxItems.length <= 1) return;
+            lightboxIndex = (lightboxIndex + direction + lightboxItems.length) % lightboxItems.length;
+            renderLightboxImage();
+        };
+
         // 统一关闭灯箱的函数
         window.closeLightbox = function() {
             lightbox.classList.add('hidden');
             lightbox.classList.remove('flex');
             lightbox.style.display = 'none';
             lightboxContent.innerHTML = '';
+            lightboxItems = [];
+            lightboxIndex = 0;
+            setLightboxGalleryControls(false);
         };
 
         // 兼容图片板块的旧接口
         window.openLightboxImg = function(src) {
             window.openLightbox(src, false);
         };
+
+        lightboxContent.addEventListener('touchstart', (event) => {
+            touchStartX = event.touches[0].clientX;
+        }, { passive: true });
+
+        lightboxContent.addEventListener('touchend', (event) => {
+            const touchEndX = event.changedTouches[0].clientX;
+            const diffX = touchEndX - touchStartX;
+            if (Math.abs(diffX) > 50) {
+                window.moveLightbox(diffX < 0 ? 1 : -1);
+            }
+        }, { passive: true });
+
+        document.addEventListener('keydown', (event) => {
+            if (lightbox.classList.contains('hidden')) return;
+            if (event.key === 'ArrowLeft') window.moveLightbox(-1);
+            if (event.key === 'ArrowRight') window.moveLightbox(1);
+            if (event.key === 'Escape') window.closeLightbox();
+        });
 
         // 筛选功能
         const filterBtns = document.querySelectorAll('#filter-btns .glass-button');
